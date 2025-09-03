@@ -22,7 +22,7 @@ animations=[]
 def draw():
     global items,current_level,game_over,game_complete
     screen.clear()
-    screen.blit("greenphoto",(0,0))
+    screen.blit("greenphotoimg",(0,0))
     if game_over:
         display_message("game_over","try_again")
     elif game_complete:
@@ -62,9 +62,46 @@ def create_items(items_to_create):
     return new_items
     
 def layout_items(items_to_layout):
-    number_of_gaps=items_to_layout+1
+    number_of_gaps=len(items_to_layout)+1
     gap_size=WIDTH/number_of_gaps
     random.shuffle(items_to_layout)
     for index,item in enumerate(items_to_layout):
         new_x_pos=(index+1)*gap_size 
         item.x=new_x_pos
+
+def animate_items(item_to_animate):
+    global animations 
+    for item in item_to_animate:
+        duration=START_SPEED-current_level
+        item.anchor=("center","bottom")
+        animation=animate(item,duration=duration,on_finished=handled_game_over,y=HEIGHT)
+
+def handled_game_over():
+    global game_over
+    game_over=True
+
+def on_mouse_down(pos):
+    global items,current_level
+    for item in items:
+        if item.collidepoint(pos):
+            if "paperbag" in item.image:
+                handled_game_complete()            
+            else:
+                handled_game_over()
+
+def handled_game_complete():
+    global current_level,items,animations,game_complete
+    stop_animation(animations)
+    if current_level==FINAL_LEVEL:
+        game_complete=True
+    else:
+        current_level+=1
+        items=[]
+        animations=[]
+
+def stop_animation(animations_to_stop):
+    for animation in animations_to_stop:
+        if animation.running:
+            animation.stop()
+            
+pgzrun.go()
